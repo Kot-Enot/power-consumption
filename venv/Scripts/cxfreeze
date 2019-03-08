@@ -1,0 +1,6 @@
+#!C:\PycharmProjects\PowerConsumption\venv\python.exe
+
+from cx_Freeze import main
+
+main()
+
