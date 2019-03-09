@@ -3,7 +3,7 @@ import os
 from PyQt5 import QtWidgets
 import shop_data
 import main_form
-import sum_month
+import dialog
 import csv
 
 
@@ -14,20 +14,21 @@ class App(QtWidgets.QMainWindow, main_form.Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.set_enabled_data_fields(False)
+
         self.comboBox_shop.currentIndexChanged.connect(self.change_shop)
         self.pushbtn_add_shop.clicked.connect(self.add_shop_click)
         self.pushbtn_del_shop.clicked.connect(self.del_shop_click)
+        self.pushbtn_confirm_data.clicked.connect(self.update_data_click)
         self.pushbtn_open_total.clicked.connect(self.open_total_click)
-        self.pushbtn_confirm_data.clicked.connect(self.confirm_data_click)
-        self.pushbtn_load_file.clicked.connect(self.load_file_click)
-        self.pushbtn_save_file.clicked.connect(self.save_file_click)
+        self.action_load_file.triggered.connect(self.load_file_click)
+        self.action_save_file.triggered.connect(self.save_file_click)
 
     def change_shop(self):
         index = self.comboBox_shop.currentIndex()
         if index != -1:
             self.set_enabled_data_fields(True)
             self.refresh_shops(index)
-            if not(self.pushbtn_confirm_data.isEnabled()):
+            if not (self.pushbtn_confirm_data.isEnabled()):
                 self.pushbtn_confirm_data.setEnabled(True)
         else:
             self.clear_app()
@@ -62,8 +63,9 @@ class App(QtWidgets.QMainWindow, main_form.Ui_MainWindow):
         self.dblSpinBox_october.setValue(self.shop_data.get_value_for_month(shop_id, 10))
         self.dblSpinBox_november.setValue(self.shop_data.get_value_for_month(shop_id, 11))
         self.dblSpinBox_december.setValue(self.shop_data.get_value_for_month(shop_id, 12))
+        self.refresh_shop_values(self.shop_data.get_shop_list()[shop_id])
 
-        shop = self.shop_data.get_shop_list()[shop_id]
+    def refresh_shop_values(self, shop):
         if shop[13] != '':
             self.lbl_total_value.setText(shop[13])
         else:
@@ -86,15 +88,16 @@ class App(QtWidgets.QMainWindow, main_form.Ui_MainWindow):
             self.comboBox_shop.removeItem(index)
 
     def open_total_click(self):
-        dialog = DialogTotal(self.shop_data.get_total_line())
-        dialog.exec_()
+        dialog_total = dialog.DialogTotal(self.shop_data.get_total_line())
+        dialog_total.exec_()
 
-    def confirm_data_click(self):
+    def update_data_click(self):
         shop_list = self.shop_data.get_shop_list()
         index = self.comboBox_shop.currentIndex()
         sum_months = [0.0]
         max_usage_month = ['Не найдено']
         self.set_data_months(self.grid_months, sum_months, max_usage_month)
+        sum_months[0] = format(sum_months[0], '.2f')  # во избежание перегрузок
         shop_list[index] = [self.shop_data.get_shop_name(index), str(self.dblSpinBox_january.value()).replace('.', ','),
                             str(self.dblSpinBox_february.value()).replace('.', ','),
                             str(self.dblSpinBox_march.value()).replace('.', ','),
@@ -164,31 +167,8 @@ class App(QtWidgets.QMainWindow, main_form.Ui_MainWindow):
                         self.shop_data.save_data_as_xlsx(shop_list, csv_path[0])
                 except:
                     QtWidgets.QMessageBox.about(self, 'Ошибка', 'Невозможно записать файл')
-
         else:
             QtWidgets.QMessageBox.about(self, 'Ошибка', 'Записи о цехах не найдены')
-
-
-class DialogTotal(QtWidgets.QDialog, sum_month.Ui_Dialog):
-    def __init__(self, total):
-        super().__init__()
-        self.setupUi(self)
-        self.set_data(total)
-
-    def set_data(self, total):
-        self.lbl_data_january.setText(total[1])
-        self.lbl_data_february.setText(total[2])
-        self.lbl_data_march.setText(total[3])
-        self.lbl_data_april.setText(total[4])
-        self.lbl_data_may.setText(total[5])
-        self.lbl_data_june.setText(total[6])
-        self.lbl_data_july.setText(total[7])
-        self.lbl_data_august.setText(total[8])
-        self.lbl_data_september.setText(total[9])
-        self.lbl_data_october.setText(total[10])
-        self.lbl_data_november.setText(total[11])
-        self.lbl_data_december.setText(total[12])
-        self.lcdNumber.display(total[13])
 
 
 def main():
