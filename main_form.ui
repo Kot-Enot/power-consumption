@@ -564,7 +564,7 @@
     <item>
      <layout class="QVBoxLayout" name="vlayout_data_buttons">
       <item alignment="Qt::AlignHCenter">
-      <widget class="QPushButton" name="pushbtn_confirm_data">
+       <widget class="QPushButton" name="pushbtn_confirm_data">
         <property name="minimumSize">
          <size>
           <width>200</width>
